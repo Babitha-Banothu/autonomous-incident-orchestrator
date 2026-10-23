@@ -1,0 +1,29 @@
+[
+  {
+    "id": "dep-1042",
+    "ts": "2026-10-22T14:10:00",
+    "service": "checkout-api",
+    "version": "v2.14.0",
+    "previous_version": "v2.13.2",
+    "author": "ci-bot",
+    "commit_message": "Reduce DB connection pool size from 20 to 5; add retry on payment calls"
+  },
+  {
+    "id": "dep-1041",
+    "ts": "2026-10-21T16:30:00",
+    "service": "auth-service",
+    "version": "v1.8.1",
+    "previous_version": "v1.8.0",
+    "author": "ci-bot",
+    "commit_message": "Bump logging library"
+  },
+  {
+    "id": "dep-1039",
+    "ts": "2026-10-20T11:05:00",
+    "service": "checkout-api",
+    "version": "v2.13.2",
+    "previous_version": "v2.13.1",
+    "author": "ci-bot",
+    "commit_message": "Fix rounding bug in tax calculation"
+  }
+]

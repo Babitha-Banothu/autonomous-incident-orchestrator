@@ -1,0 +1,370 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IncidentIQ — Incident Orchestrator</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #0b1020;
+  --panel: #121a2c;
+  --panel2: #182238;
+  --border: #29354c;
+  --text: #edf2ff;
+  --muted: #91a0ba;
+  --blue: #7aa7ff;
+  --green: #42d6a4;
+  --red: #ff7185;
+  --amber: #f8c66b;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 14px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+button, input { font: inherit; }
+button { cursor: pointer; }
+header {
+  height: 70px; padding: 0 5%; border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+  background: #0e1526;
+}
+.brand { font-size: 20px; font-weight: 750; letter-spacing: -.5px; }
+.brand span { color: var(--blue); }
+.pill {
+  border: 1px solid var(--border); padding: 5px 10px;
+  border-radius: 30px; color: var(--muted); font-size: 12px;
+}
+main { max-width: 1200px; padding: 32px 22px 60px; margin: auto; }
+.eyebrow { color: var(--blue); font-size: 11px; font-weight: 800; letter-spacing: 2px; }
+h1 { font-size: clamp(26px, 4vw, 36px); letter-spacing: -1px; margin: 5px 0; }
+.subtitle { color: var(--muted); margin: 0 0 28px; }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.panel {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px; min-width: 0;
+}
+.panel h2 { margin: 0 0 16px; font-size: 15px; }
+.metric { font-size: 26px; font-weight: 750; letter-spacing: -.5px; }
+.muted { color: var(--muted); font-size: 12px; }
+.section { margin-top: 22px; }
+.form-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.field { flex: 1; min-width: 190px; }
+label { display: block; color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+input {
+  width: 100%; background: var(--bg); color: var(--text);
+  border: 1px solid var(--border); padding: 11px 12px; border-radius: 8px;
+}
+button {
+  border: 0; border-radius: 8px; padding: 11px 16px;
+  font-weight: 700; background: var(--blue); color: #091329;
+}
+button:disabled { opacity: .5; cursor: wait; }
+button.secondary {
+  background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+}
+button.approve { background: var(--green); }
+.status { color: var(--amber); font-size: 12px; }
+.findings { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.finding-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.finding-title h3 { font-size: 14px; margin: 0; }
+.severity {
+  border-radius: 20px; padding: 3px 8px; font-size: 10px;
+  text-transform: uppercase; font-weight: 800;
+}
+.high { background: #482331; color: #ff9aaa; }
+.medium { background: #46371f; color: #f8ce7a; }
+.low { background: #193c35; color: #6be5ba; }
+p { overflow-wrap: anywhere; }
+ul { padding-left: 18px; color: var(--muted); font-size: 12px; }
+li { margin: 7px 0; overflow-wrap: anywhere; }
+.diagnosis { border-color: #425b8c; }
+.diagnosis h2 { color: var(--blue); }
+.diagnosis-text { font-size: 17px; font-weight: 650; }
+.action {
+  background: var(--panel2); border: 1px solid var(--border);
+  padding: 14px; border-radius: 10px; margin: 16px 0;
+}
+.action strong { color: var(--green); }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+#message { margin: 12px 0; color: var(--muted); white-space: pre-wrap; }
+.hidden { display: none !important; }
+footer { color: var(--muted); font-size: 11px; text-align: center; margin-top: 28px; }
+@media(max-width: 760px) {
+  .grid, .findings { grid-template-columns: 1fr; }
+  header { padding: 0 18px; }
+  main { padding: 24px 14px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Incident<span>IQ</span></div>
+  <div class="pill">LOCAL ENVIRONMENT · MOCK REMEDIATION</div>
+</header>
+
+<main>
+  <div class="eyebrow">AI-POWERED OPERATIONS</div>
+  <h1>Incident command center</h1>
+  <p class="subtitle">Investigate production signals, identify root causes, and review remediation before approval.</p>
+
+  <div class="grid">
+    <div class="panel">
+      <div class="muted">Investigation status</div>
+      <div class="metric" id="overviewStatus">Ready</div>
+      <div class="muted">Awaiting investigation</div>
+    </div>
+    <div class="panel">
+      <div class="muted">LLM calls</div>
+      <div class="metric" id="overviewCalls">—</div>
+      <div class="muted">Agents + synthesis</div>
+    </div>
+    <div class="panel">
+      <div class="muted">Estimated cost</div>
+      <div class="metric" id="overviewCost">$0.000000</div>
+      <div class="muted">Per investigation</div>
+    </div>
+  </div>
+
+  <section class="panel section">
+    <h2>New investigation</h2>
+    <form id="investigateForm">
+      <div class="form-row">
+        <div class="field">
+          <label for="service">Service name</label>
+          <input id="service" value="checkout-api" required>
+        </div>
+        <div class="field">
+          <label for="alertTime">Alert time</label>
+          <input id="alertTime" value="2026-10-22T14:15:00" required>
+        </div>
+        <div style="align-self:end">
+          <button id="investigateButton" type="submit">Run investigation →</button>
+        </div>
+      </div>
+    </form>
+    <div id="message" role="status">Ready to investigate the sample incident.</div>
+  </section>
+
+  <section id="results" class="hidden">
+    <div class="section panel">
+      <div class="finding-title">
+        <h2>Investigation findings</h2>
+        <span class="pill" id="incidentId">Incident —</span>
+      </div>
+      <div id="findings" class="findings"></div>
+    </div>
+
+    <div class="section panel diagnosis">
+      <h2>AI root-cause diagnosis</h2>
+      <div class="muted">ROOT CAUSE</div>
+      <p class="diagnosis-text" id="rootCause"></p>
+      <div class="finding-title">
+        <span class="muted">Confidence</span>
+        <span id="confidence" class="pill"></span>
+      </div>
+      <div class="action">
+        <div class="muted">PROPOSED REMEDIATION</div>
+        <p><strong id="actionType"></strong></p>
+        <p id="actionReason"></p>
+        <p class="muted" id="actionTarget"></p>
+      </div>
+      <div class="actions">
+        <button id="approveButton" class="approve" type="button">Approve mock action</button>
+        <button id="newButton" class="secondary" type="button">New investigation</button>
+        <span id="approvalStatus" class="status"></span>
+      </div>
+      <p class="muted">Approval runs the project's mock executor. It does not change a real production service.</p>
+    </div>
+
+    <div class="section panel">
+      <h2>LLM usage & observability</h2>
+      <div class="grid">
+        <div>
+          <div class="muted">Recorded calls</div>
+          <div class="metric" id="costCalls">—</div>
+        </div>
+        <div>
+          <div class="muted">Estimated total</div>
+          <div class="metric" id="costTotal">$0.000000</div>
+        </div>
+        <div>
+          <div class="muted">Configured cap</div>
+          <div class="metric" id="costCap">$0.050000</div>
+        </div>
+      </div>
+      <p class="muted">Detailed OpenTelemetry spans are printed in the API server terminal.</p>
+    </div>
+  </section>
+
+  <footer>IncidentIQ · FastAPI + LLM Gateway + OpenTelemetry · Local demo</footer>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+let currentIncidentId = null;
+let busy = false;
+
+function setMessage(text) {
+  $("message").textContent = text;
+}
+
+function money(value) {
+  return "$" + Number(value || 0).toFixed(6);
+}
+
+function safeText(value) {
+  return value == null ? "Not provided" : String(value);
+}
+
+function renderFinding(finding) {
+  const card = document.createElement("article");
+  card.className = "panel";
+
+  const heading = document.createElement("div");
+  heading.className = "finding-title";
+
+  const title = document.createElement("h3");
+  title.textContent = safeText(finding.agent);
+
+  const severity = document.createElement("span");
+  severity.className = "severity " + (["high", "medium", "low"].includes(finding.severity) ? finding.severity : "low");
+  severity.textContent = safeText(finding.severity);
+
+  heading.append(title, severity);
+
+  const summary = document.createElement("p");
+  summary.textContent = safeText(finding.summary);
+
+  const evidenceTitle = document.createElement("div");
+  evidenceTitle.className = "muted";
+  evidenceTitle.textContent = "EVIDENCE";
+
+  const list = document.createElement("ul");
+  (finding.evidence || []).forEach(item => {
+    const li = document.createElement("li");
+    li.textContent = safeText(item);
+    list.appendChild(li);
+  });
+
+  card.append(heading, summary, evidenceTitle, list);
+  return card;
+}
+
+function renderInvestigation(data) {
+  currentIncidentId = data.incident_id;
+  $("results").classList.remove("hidden");
+  $("incidentId").textContent = "Incident " + data.incident_id;
+  $("overviewStatus").textContent = data.status || "Pending";
+  $("findings").replaceChildren(...(data.findings || []).map(renderFinding));
+
+  const diagnosis = data.diagnosis || {};
+  const action = diagnosis.action || {};
+
+  $("rootCause").textContent = safeText(diagnosis.root_cause);
+  $("confidence").textContent = "Confidence: " + safeText(diagnosis.confidence);
+  $("actionType").textContent = safeText(action.type).toUpperCase();
+  $("actionReason").textContent = safeText(action.reason);
+  $("actionTarget").textContent =
+    "Service: " + safeText(action.target_service) +
+    (action.target_version ? " · Target version: " + action.target_version : "");
+
+  const cost = data.cost || {};
+  $("overviewCalls").textContent = cost.calls ?? "—";
+  $("costCalls").textContent = cost.calls ?? "—";
+  $("overviewCost").textContent = money(cost.total_cost_usd);
+  $("costTotal").textContent = money(cost.total_cost_usd);
+  $("costCap").textContent = money(cost.cap_usd);
+
+  $("approveButton").disabled = action.type === "none";
+  $("approvalStatus").textContent =
+    action.type === "none" ? "No remediation action proposed." : "Pending approval";
+}
+
+$("investigateForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  if (busy) return;
+
+  busy = true;
+  $("investigateButton").disabled = true;
+  $("approveButton").disabled = true;
+  $("overviewStatus").textContent = "Running";
+  setMessage("Running agents and generating a diagnosis. Check the server terminal for trace spans.");
+
+  try {
+    const response = await fetch("/investigate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        service: $("service").value.trim(),
+        alert_time: $("alertTime").value.trim()
+      })
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.detail || "Investigation failed with HTTP " + response.status);
+    }
+
+    renderInvestigation(data);
+    setMessage("Investigation completed successfully.");
+  } catch (error) {
+    $("overviewStatus").textContent = "Error";
+    setMessage("Could not complete investigation: " + error.message);
+  } finally {
+    busy = false;
+    $("investigateButton").disabled = false;
+  }
+});
+
+$("approveButton").addEventListener("click", async () => {
+  if (!currentIncidentId || busy) return;
+
+  if (!confirm("Approve the proposed mock remediation action? No real production service will be changed.")) return;
+
+  busy = true;
+  $("approveButton").disabled = true;
+  $("approvalStatus").textContent = "Processing approval…";
+
+  try {
+    const response = await fetch(
+      "/approve/" + encodeURIComponent(currentIncidentId),
+      { method: "POST" }
+    );
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.detail || "Approval failed with HTTP " + response.status);
+    }
+
+    $("overviewStatus").textContent = data.status || "Executed";
+    $("approvalStatus").textContent =
+  "✓ Action completed — " +
+  safeText(data.result || data.status || "Approved");
+
+    $("overviewStatus").textContent = "Completed";
+    $("approveButton").textContent = "Action completed ✓";
+    $("approveButton").disabled = true;
+  } catch (error) {
+    $("approvalStatus").textContent = "Approval failed: " + error.message;
+    $("approveButton").disabled = false;
+  } finally {
+    busy = false;
+  }
+});
+
+$("newButton").addEventListener("click", () => {
+  currentIncidentId = null;
+  $("results").classList.add("hidden");
+  $("overviewStatus").textContent = "Ready";
+  $("overviewCalls").textContent = "—";
+  $("overviewCost").textContent = "$0.000000";
+  $("approvalStatus").textContent = "";
+  setMessage("Ready for a new investigation.");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+</script>
+</body>
+</html>
